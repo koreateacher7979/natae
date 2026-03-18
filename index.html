@@ -1,266 +1,501 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학생별 학원 스케줄 대시보드</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0f4f8;
-            /* 고정 해상도 대신 뷰포트 크기에 맞춤 */
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            padding: 1.5rem;
-            overflow: hidden; /* 전체 스크롤 방지 */
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(31, 38, 135, 0.08);
-            display: flex;
-            flex-direction: column;
-            min-height: 0; /* flex 자식 요소의 크기 축소를 허용 */
-        }
-        .current-day {
-            background: #f0f9ff !important;
-            border: 2px solid #3b82f6 !important;
-        }
-        .subject-tag {
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-        .subject-math { background-color: #fee2e2; color: #ef4444; }
-        .subject-eng { background-color: #dcfce7; color: #10b981; }
-        .subject-kor { background-color: #fef9c3; color: #eab308; }
-        .subject-sci { background-color: #e0e7ff; color: #6366f1; }
-        .subject-etc { background-color: #f3f4f6; color: #6b7280; }
-        
-        /* 내부 리스트 스크롤바 최적화 */
-        .custom-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>학원 스케줄 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --primary: #1e3a5f;
+    --accent: #2e86de;
+    --text: #1a202c;
+    --text-sub: #4a5568;
+    --text-muted: #718096;
+    --border: #e2e8f0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --taeyun: #2e86de;
+    --nayun: #e53e3e;
+    --header-h: 64px;
+    --gap: 12px;
+    --pad: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  /* ═══ HEADER ════════════════════════════════════════ */
+  .header {
+    height: var(--header-h);
+    background: linear-gradient(135deg, #1a3356 0%, #2c5282 55%, #2b6cb0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .h-left { display:flex; align-items:center; gap:14px; }
+  .h-icon {
+    width:40px; height:40px;
+    background:rgba(255,255,255,0.15); border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .h-title { color:#fff; font-size:20px; font-weight:800; letter-spacing:-0.3px; }
+  .h-sub   { color:rgba(255,255,255,0.6); font-size:11px; margin-top:2px; }
+  .h-right { display:flex; align-items:center; gap:18px; }
+  .dev-badge {
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
+    border-radius:9px; padding:6px 14px; color:rgba(255,255,255,0.9);
+    font-size:11.5px; font-weight:500; line-height:1.6; text-align:right;
+  }
+  .dev-badge .lbl { color:rgba(255,255,255,0.5); font-size:10px; }
+  .clock-box { text-align:right; color:#fff; }
+  .clock-box .time {
+    font-family:'Montserrat',sans-serif; font-size:22px;
+    font-weight:700; letter-spacing:2px; line-height:1;
+  }
+  .clock-box .dt { font-size:11px; color:rgba(255,255,255,0.6); margin-top:3px; }
+
+  /* ═══ BODY GRID ════════════════════════════════════════ */
+  .body {
+    display: grid;
+    grid-template-columns: 310px 1fr 300px;
+    gap: var(--gap);
+    padding: var(--gap) var(--pad);
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;
+  }
+
+  .col { display:flex; flex-direction:column; gap:var(--gap); overflow:hidden; min-height:0; }
+
+  /* ═══ CARD ════════════════════════════════════════════ */
+  .card {
+    background: var(--card);
+    border-radius: 13px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .card.grow { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+  .ch {
+    padding: 9px 13px 8px;
+    border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    flex-shrink: 0;
+  }
+  .ch-title { font-size:12px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:5px; }
+  .cb { padding: 11px 13px; }
+  .cb.scroll { overflow-y:auto; flex:1; min-height:0; }
+  .cb.scroll::-webkit-scrollbar { width:3px; }
+  .cb.scroll::-webkit-scrollbar-thumb { background:#cbd5e0; border-radius:3px; }
+
+  /* ═══ TODAY BANNER ════════════════════════════════════ */
+  .today-banner {
+    background: linear-gradient(135deg, #1e3a5f, #2e86de);
+    border-radius: 13px;
+    padding: 12px 14px;
+    color: #fff;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .today-banner .lbl { font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.6); font-weight:600; }
+  .today-banner .full { font-size:16px; font-weight:800; margin-top:3px; }
+  .today-banner .day  { font-size:11.5px; color:rgba(255,255,255,0.7); margin-top:2px; }
+
+  /* ═══ STUDENT TODAY BLOCK ════════════════════════════ */
+  .stu-block { border-radius:13px; overflow:hidden; box-shadow:var(--shadow); flex-shrink:0; }
+  .stu-hd {
+    padding: 9px 13px;
+    display:flex; align-items:center; gap:8px;
+    color:#fff; font-weight:700; font-size:12.5px;
+  }
+  .stu-hd.t { background: linear-gradient(90deg,#1a56c4,#2e86de); }
+  .stu-hd.n { background: linear-gradient(90deg,#c0392b,#e53e3e); }
+  .av {
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(255,255,255,0.25); border:2px solid rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800;
+  }
+  .stu-items { background:#fff; border:1px solid var(--border); border-top:none; }
+  .stu-item {
+    padding: 8px 13px;
+    border-bottom: 1px solid #f0f4f8;
+    display:flex; align-items:center; gap:9px;
+  }
+  .stu-item:last-child { border-bottom:none; }
+  .sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .sinfo { flex:1; }
+  .sinfo .an { font-size:11.5px; font-weight:600; }
+  .sinfo .sj { font-size:10px; color:var(--text-muted); margin-top:1px; }
+  .stime { text-align:right; }
+  .stime .tm { font-size:11px; font-weight:600; font-family:'Montserrat',sans-serif; color:var(--text-sub); }
+  .stime .dur {
+    font-size:9.5px; font-weight:700; padding:2px 5px; border-radius:8px;
+    margin-top:2px; display:inline-block;
+  }
+  .no-sch { padding:12px; text-align:center; color:var(--text-muted); font-size:11.5px; }
+
+  /* ═══ LEGEND ════════════════════════════════════════ */
+  .legend { display:flex; flex-wrap:wrap; gap:7px; }
+  .leg { display:flex; align-items:center; gap:4px; font-size:10.5px; color:var(--text-sub); }
+  .ldot { width:7px; height:7px; border-radius:50%; }
+  .badge {
+    display:inline-block; padding:1px 6px; border-radius:5px;
+    font-size:9.5px; font-weight:700;
+  }
+  .badge.ns { background:#fff3cd; color:#856404; border:1px solid #ffc107; }
+
+  /* ═══ SCHEDULE TABLE ════════════════════════════════ */
+  .tab-bar {
+    display:flex; gap:4px;
+    padding: 9px 13px 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    padding: 6px 13px;
+    font-size:12px; font-weight:600;
+    border-radius: 8px 8px 0 0;
+    cursor:pointer; border:1px solid transparent; border-bottom:none;
+    color:var(--text-muted); transition:all 0.18s;
+  }
+  .tab.at { color:var(--taeyun); background:#fff; border-color:var(--border); border-bottom-color:#fff; margin-bottom:-1px; }
+  .tab.an { color:var(--nayun);  background:#fff; border-color:var(--border); border-bottom-color:#fff; margin-bottom:-1px; }
+  .tab:not(.at):not(.an):hover { background:#f8fafc; color:var(--text); }
+
+  .tbl-wrap { flex:1; overflow-y:auto; min-height:0; }
+  .tbl-wrap::-webkit-scrollbar { width:3px; }
+  .tbl-wrap::-webkit-scrollbar-thumb { background:#cbd5e0; border-radius:3px; }
+
+  table.sch { width:100%; border-collapse:collapse; font-size:11.5px; }
+  table.sch th {
+    background:#f8fafc; padding:7px 9px;
+    text-align:center; font-weight:700; color:var(--text-sub);
+    border-bottom:2px solid var(--border); font-size:11px;
+    position:sticky; top:0; z-index:1;
+  }
+  table.sch td { padding:6px 9px; border-bottom:1px solid #f0f4f8; vertical-align:top; }
+  table.sch tr:last-child td { border-bottom:none; }
+  table.sch tr:hover td { background:#f9fbfd; }
+  .dc { font-weight:800; font-size:12px; text-align:center; width:36px; }
+  .d-mon{color:#2e86de} .d-tue{color:#fd9644} .d-wed{color:#26de81}
+  .d-thu{color:#a55eea} .d-fri{color:#ff6b6b} .d-sat{color:#45aaf2} .d-sun{color:#fc5c65}
+  .today-row td { background:rgba(46,134,222,0.06) !important; }
+  .today-mk {
+    display:inline-block; background:var(--accent); color:#fff;
+    border-radius:5px; padding:2px 6px; font-size:11px; font-weight:800;
+  }
+  .pill {
+    display:inline-block; padding:2px 7px; border-radius:6px;
+    font-size:10.5px; font-weight:600; margin:1px 2px 1px 0; line-height:1.4;
+  }
+  .pill .pt { font-size:9.5px; opacity:0.75; font-family:'Montserrat',sans-serif; margin-left:3px; }
+  .ns-badge {
+    display:inline-block; padding:1px 5px; border-radius:4px;
+    font-size:9px; font-weight:700; background:#fff3cd; color:#856404;
+    border:1px solid #ffc107; margin-left:3px;
+  }
+
+  /* ═══ STATS ════════════════════════════════════════ */
+  .bar-item { margin-bottom:8px; }
+  .bar-lbl { display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px; font-weight:600; }
+  .bar-lbl .hrs { font-family:'Montserrat',sans-serif; color:var(--text-muted); font-size:10.5px; }
+  .bar-track { height:6px; background:#eef2f7; border-radius:20px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:20px; transition:width 0.7s ease; }
+
+  .ac-row {
+    display:flex; align-items:center; gap:8px;
+    padding: 7px 10px; border-radius:9px;
+    border:1px solid var(--border); background:#fafbfc;
+    margin-bottom:5px;
+  }
+  .ac-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .ac-name { flex:1; font-size:11.5px; font-weight:600; }
+  .ac-days { font-size:10px; color:var(--text-muted); }
+  .ac-hrs  { font-size:12px; font-weight:800; font-family:'Montserrat',sans-serif; }
+
+  .stats-2col {
+    display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); flex-shrink:0;
+  }
+</style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="flex justify-between items-end mb-4 px-2 flex-shrink-0">
-        <div>
-            <h1 class="text-xl md:text-2xl font-bold text-slate-800 leading-tight">학원 스케줄 통합 관리 대시보드</h1>
-            <p class="text-slate-500 text-xs md:text-sm font-medium">개발자: 가치있는 미래교육연구소 대표 김병찬</p>
+<!-- HEADER -->
+<div class="header">
+  <div class="h-left">
+    <div class="h-icon">🏫</div>
+    <div>
+      <div class="h-title">학원 스케줄 대시보드</div>
+      <div class="h-sub">나윤 · 태윤 학생 학원 일정 관리 시스템</div>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="dev-badge">
+      <div class="lbl">개발자</div>
+      가치있는 미래교육연구소 대표 <strong>김병찬</strong>
+    </div>
+    <div class="clock-box">
+      <div class="time" id="clock">00:00:00</div>
+      <div class="dt"   id="dateStr">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- 좌측: 오늘의 일정 -->
+  <div class="col">
+    <div class="today-banner">
+      <div class="lbl">📅 TODAY'S SCHEDULE</div>
+      <div class="full" id="todayFull">—</div>
+      <div class="day"  id="todayDay">—</div>
+    </div>
+
+    <div class="stu-block">
+      <div class="stu-hd t"><div class="av">태</div>김태윤 — 오늘의 일정</div>
+      <div class="stu-items" id="ty-today"><div class="no-sch">⏳ 불러오는 중...</div></div>
+    </div>
+
+    <div class="stu-block">
+      <div class="stu-hd n"><div class="av">나</div>김나윤 — 오늘의 일정</div>
+      <div class="stu-items" id="ny-today"><div class="no-sch">⏳ 불러오는 중...</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ch-title">🎨 과목 범례</div></div>
+      <div class="cb">
+        <div class="legend">
+          <div class="leg"><div class="ldot" style="background:#26de81"></div>영어</div>
+          <div class="leg"><div class="ldot" style="background:#a55eea"></div>수학</div>
+          <div class="leg"><div class="ldot" style="background:#fd9644"></div>국어</div>
+          <div class="leg"><div class="ldot" style="background:#45aaf2"></div>과학</div>
+          <div class="leg"><div class="ldot" style="background:#778ca3"></div>학교자습</div>
         </div>
-        <div class="text-right">
-            <div id="current-time" class="text-xl md:text-2xl font-bold text-blue-600 leading-none"></div>
-            <div id="current-date" class="text-slate-500 text-xs md:text-sm font-medium mt-1"></div>
+        <div style="margin-top:7px;display:flex;align-items:center;gap:6px;">
+          <span class="badge ns">내신대비</span>
+          <span style="font-size:10px;color:var(--text-muted)">내신대비 특별 일정</span>
         </div>
-    </header>
+      </div>
+    </div>
+  </div>
 
-    <!-- Main Content: 화면 크기에 맞춰 유동적으로 변화 -->
-    <main class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow min-height-0 overflow-hidden">
-        
-        <!-- Student 1: 김태윤 -->
-        <section class="glass-card p-4">
-            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2 flex-shrink-0">
-                <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center">
-                    <span class="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 text-xs">태윤</span>
-                    김태윤 학생 일정
-                </h2>
-                <span class="text-[10px] md:text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded-full">중등/고등과정</span>
-            </div>
-            
-            <div id="taeyoon-schedule" class="flex-grow overflow-y-auto custom-scroll pr-1 space-y-2">
-                <!-- Weekly Schedule Rows -->
-            </div>
-        </section>
+  <!-- 중앙: 주간 스케줄 -->
+  <div class="col">
+    <div class="card grow">
+      <div class="tab-bar" id="tabBar">
+        <div class="tab at" onclick="switchTab('ty')">🧑‍🎓 김태윤</div>
+        <div class="tab"    onclick="switchTab('ny')">👩‍🎓 김나윤</div>
+      </div>
+      <div class="tbl-wrap" id="ty-tbl">
+        <table class="sch">
+          <thead><tr><th style="width:40px">요일</th><th>일반 일정</th><th>내신대비 일정</th></tr></thead>
+          <tbody id="ty-tbody"></tbody>
+        </table>
+      </div>
+      <div class="tbl-wrap" id="ny-tbl" style="display:none">
+        <table class="sch">
+          <thead><tr><th style="width:40px">요일</th><th>일반 일정</th><th>내신대비 일정</th></tr></thead>
+          <tbody id="ny-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        <!-- Student 2: 김나윤 -->
-        <section class="glass-card p-4">
-            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2 flex-shrink-0">
-                <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center">
-                    <span class="w-7 h-7 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-2 text-xs">나윤</span>
-                    김나윤 학생 일정
-                </h2>
-                <span class="text-[10px] md:text-xs text-emerald-500 font-bold bg-emerald-50 px-2 py-1 rounded-full">고등과정</span>
-            </div>
-            
-            <div id="nayoon-schedule" class="flex-grow overflow-y-auto custom-scroll pr-1 space-y-2">
-                <!-- Weekly Schedule Rows -->
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer Summary: 하단 고정 높이 -->
-    <footer class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0" style="height: 15%;">
-        <div class="glass-card p-3 border-l-4 border-blue-500 flex flex-col justify-center">
-            <h3 class="font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">오늘의 일정 (태윤)</h3>
-            <div id="today-summary-taeyoon" class="text-slate-600 text-[11px] leading-tight overflow-y-auto custom-scroll"></div>
+  <!-- 우측: 통계 -->
+  <div class="col">
+    <div class="stats-2col">
+      <div class="card">
+        <div class="ch">
+          <div class="ch-title">📊 태윤 학습시간</div>
+          <span style="font-size:9.5px;color:var(--taeyun);font-weight:700;">주간</span>
         </div>
-        <div class="glass-card p-3 border-l-4 border-emerald-500 flex flex-col justify-center">
-            <h3 class="font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">오늘의 일정 (나윤)</h3>
-            <div id="today-summary-nayoon" class="text-slate-600 text-[11px] leading-tight overflow-y-auto custom-scroll"></div>
+        <div class="cb" id="ty-bars"></div>
+      </div>
+      <div class="card">
+        <div class="ch">
+          <div class="ch-title">📊 나윤 학습시간</div>
+          <span style="font-size:9.5px;color:var(--nayun);font-weight:700;">주간</span>
         </div>
-        <div class="glass-card p-3 bg-gradient-to-br from-blue-600 to-blue-700 text-white flex flex-col justify-center items-center text-center">
-            <p class="text-blue-100 text-[10px] mb-1">총 학습 소요 시간 (오늘)</p>
-            <div id="total-duration" class="text-2xl md:text-3xl font-black">0시간 0분</div>
-            <p class="text-[9px] text-blue-200 mt-1 opacity-70">가치있는 미래교육연구소</p>
-        </div>
-    </footer>
+        <div class="cb" id="ny-bars"></div>
+      </div>
+    </div>
 
-    <script>
-        const RAW_DATA = [
-            { student: '김태윤', day: '월', subject: '영어', academy: '손샘영어', time: '18:30~20:30' },
-            { student: '김태윤', day: '화', subject: '수학', academy: '옥수학', time: '16:30~19:00' },
-            { student: '김태윤', day: '목', subject: '영어', academy: '손샘영어', time: '18:30~20:30' },
-            { student: '김태윤', day: '금', subject: '수학', academy: '옥수학', time: '16:30~20:30' },
-            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어', time: '11:00~14:00' },
-            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학(월성점)', time: '14:00~15:00' },
-            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어(특강)', time: '15:00~16:00' },
-            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학', time: '16:30~19:00' },
-            { student: '김나윤', day: '월', subject: '수학', academy: '디자인오브수학', time: '19:30~22:00' },
-            { student: '김나윤', day: '화', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30' },
-            { student: '김나윤', day: '수', subject: '자습', academy: '야간자습(학교)', time: '18:00~21:00' },
-            { student: '김나윤', day: '목', subject: '영어', academy: '일등영어', time: '19:00~21:00' },
-            { student: '김나윤', day: '금', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30' },
-            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '13:30~16:00' },
-            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '16:10~17:10' },
-            { student: '김나윤', day: '일', subject: '영어', academy: '일등영어', time: '19:00~21:00' }
-        ];
+    <div class="card grow">
+      <div class="ch"><div class="ch-title">🏛️ 학원별 주간 소요시간</div></div>
+      <div class="cb scroll" id="ac-list"></div>
+    </div>
+  </div>
 
-        const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+</div>
 
-        function updateDateTime() {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-            const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            document.getElementById('current-time').textContent = timeStr;
-            document.getElementById('current-date').textContent = dateStr;
-        }
+<script>
+const WD_KR   = ['일','월','화','수','목','금','토'];
+const WD_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+const MO_KR   = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const DC_MAP  = { '월':'d-mon','화':'d-tue','수':'d-wed','목':'d-thu','금':'d-fri','토':'d-sat','일':'d-sun' };
+const SUBJ_COLOR = {
+  '영어': { bg:'#e8fdf1', tx:'#1a9c58', dot:'#26de81' },
+  '수학': { bg:'#f3e8ff', tx:'#7c3aed', dot:'#a55eea' },
+  '국어': { bg:'#fff4e8', tx:'#c05621', dot:'#fd9644' },
+  '과학': { bg:'#e8f4fd', tx:'#1565c0', dot:'#45aaf2' },
+  '학교': { bg:'#f0f2f5', tx:'#546e7a', dot:'#778ca3' },
+};
+function sc(s) { for (const k of Object.keys(SUBJ_COLOR)) if (s.includes(k)) return SUBJ_COLOR[k]; return {bg:'#f0f4f8',tx:'#4a5568',dot:'#a0aec0'}; }
+const AC_COLORS=['#2e86de','#e53e3e','#a55eea','#26de81','#fd9644','#45aaf2','#fc5c65','#778ca3'];
+const acMap={}; let ci=0;
+function acColor(n){ if(!acMap[n]){acMap[n]=AC_COLORS[ci%AC_COLORS.length];ci++;} return acMap[n]; }
+function dur(t){
+  if(!t) return 0; if(/^~/.test(t)) return 60;
+  const m=t.match(/(\d{1,2}):(\d{2})[~-](\d{1,2}):(\d{2})/);
+  return m?Math.max(0,(+m[3]*60+ +m[4])-(+m[1]*60+ +m[2])):0;
+}
+function fh(mn){ const h=Math.floor(mn/60),m=mn%60; return h&&m?h+'h '+m+'m':h?h+'시간':m+'분'; }
 
-        function getSubjectClass(subject) {
-            if (subject.includes('수학')) return 'subject-math';
-            if (subject.includes('영어')) return 'subject-eng';
-            if (subject.includes('국어')) return 'subject-kor';
-            if (subject.includes('과학')) return 'subject-sci';
-            return 'subject-etc';
-        }
+/* DATA */
+const TY = {
+  general:[
+    {day:'월',entries:[{subject:'영어',academy:'손샘영어',time:'18:30~20:30'}]},
+    {day:'화',entries:[{subject:'수학',academy:'옥수학',time:'16:30~19:00'}]},
+    {day:'수',entries:[{subject:'과학',academy:'',time:''}]},
+    {day:'목',entries:[{subject:'영어',academy:'손샘영어',time:'18:30~20:30'}]},
+    {day:'금',entries:[{subject:'수학',academy:'옥수학',time:'16:30~20:30'}]},
+    {day:'토',entries:[
+      {subject:'국어',academy:'봉국어',time:'11:00~14:00'},
+      {subject:'수학',academy:'옥수학(월성점)',time:'14:00~15:00'},
+      {subject:'국어',academy:'봉국어(특강)',time:'15:00~16:00'},
+      {subject:'수학',academy:'옥수학',time:'16:30~19:00'},
+    ]},
+    {day:'일',entries:[]},
+  ],
+  nesin:[
+    {day:'월',entries:[{subject:'영어',academy:'손샘영어',time:'18:30~20:40',note:'기간: 3월28일~4월25일'}]},
+    {day:'목',entries:[{subject:'영어',academy:'손샘영어',time:'18:30~20:40'}]},
+    {day:'토',entries:[
+      {subject:'수학',academy:'옥수학',time:'15:00~19:00'},
+      {subject:'국어',academy:'봉국어',time:'19:00~22:00'},
+    ]},
+  ],
+};
+const NY = {
+  general:[
+    {day:'월',entries:[{subject:'수학',academy:'디자인오브수학',time:'19:30~22:00'}]},
+    {day:'화',entries:[{subject:'학교',academy:'심야자습(학교)',time:'~22:30'}]},
+    {day:'수',entries:[{subject:'학교',academy:'야간자습(학교)',time:'~21:00'}]},
+    {day:'목',entries:[{subject:'영어',academy:'일등영어',time:'19:00~21:00'}]},
+    {day:'금',entries:[{subject:'학교',academy:'심야자습(학교)',time:'~22:30'}]},
+    {day:'토',entries:[
+      {subject:'국어',academy:'인사이트 국어',time:'13:30~16:00'},
+      {subject:'국어',academy:'인사이트 국어',time:'16:10~17:10'},
+    ]},
+    {day:'일',entries:[{subject:'영어',academy:'일등영어',time:'19:00~21:00'}]},
+  ],
+  nesin:[
+    {day:'일',entries:[
+      {subject:'국어',academy:'국내신',time:'13:00~15:30',note:'기간: 3월22일~4월26일'},
+      {subject:'국어',academy:'국클',time:'15:30~16:40'},
+      {subject:'영어',academy:'일등영어',time:'19:00~21:00'},
+    ]},
+  ],
+};
 
-        function calculateDuration(timeStr) {
-            try {
-                const [start, end] = timeStr.split('~');
-                const startT = start.split(':');
-                const endT = end.split(':');
-                return (parseInt(endT[0])*60 + parseInt(endT[1])) - (parseInt(startT[0])*60 + parseInt(startT[1]));
-            } catch (e) { return 0; }
-        }
+/* CLOCK */
+function tick(){
+  const n=new Date(); const p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+  document.getElementById('dateStr').textContent=n.getFullYear()+'년 '+MO_KR[n.getMonth()]+' '+n.getDate()+'일 '+WD_FULL[n.getDay()];
+  document.getElementById('todayFull').textContent=n.getFullYear()+'년 '+MO_KR[n.getMonth()]+' '+n.getDate()+'일';
+  document.getElementById('todayDay').textContent=WD_FULL[n.getDay()];
+}
+setInterval(tick,1000); tick();
 
-        function renderSchedule() {
-            const today = daysOfWeek[new Date().getDay()];
-            const taeyoonContainer = document.getElementById('taeyoon-schedule');
-            const nayoonContainer = document.getElementById('nayoon-schedule');
-            const todaySummaryTaeyoon = document.getElementById('today-summary-taeyoon');
-            const todaySummaryNayoon = document.getElementById('today-summary-nayoon');
-            
-            taeyoonContainer.innerHTML = '';
-            nayoonContainer.innerHTML = '';
-            
-            let totalTodayMinutes = 0;
+/* PILL */
+function pill(e){
+  const s=sc(e.subject); const d=dur(e.time); const dt=d?' ('+fh(d)+')':'';
+  const nm=e.academy||e.subject;
+  let h=`<span class="pill" style="background:${s.bg};color:${s.tx}">${nm}${e.time?`<span class="pt">${e.time}${dt}</span>`:''}</span>`;
+  if(e.note) h+=`<span class="ns-badge" title="${e.note}">내신대비</span>`;
+  return h;
+}
 
-            // 월요일부터 일요일 순으로 렌더링
-            [1, 2, 3, 4, 5, 6, 0].forEach(dayIdx => {
-                const dayName = daysOfWeek[dayIdx];
-                const isToday = dayName === today;
+/* TABLE */
+function buildTable(student,tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  const tk=WD_KR[new Date().getDay()];
+  const nm={}; for(const nd of student.nesin) nm[nd.day]=nd.entries;
+  let html='';
+  for(const dd of student.general){
+    const isT=dd.day===tk; const ne=nm[dd.day]||[];
+    const gc=dd.entries.length?dd.entries.map(pill).join(''):'<span style="color:#c0c8d0">—</span>';
+    const nc=ne.length?ne.map(pill).join(''):'<span style="color:#c0c8d0">—</span>';
+    const dl=isT?`<span class="today-mk">${dd.day}</span>`:dd.day;
+    html+=`<tr class="${isT?'today-row':''}"><td class="dc ${DC_MAP[dd.day]}">${dl}</td><td>${gc}</td><td>${nc}</td></tr>`;
+  }
+  tbody.innerHTML=html;
+}
+buildTable(TY,'ty-tbody'); buildTable(NY,'ny-tbody');
 
-                const baseClass = `flex items-center p-2 rounded-lg border transition-all ${isToday ? 'current-day shadow-sm' : 'bg-white border-slate-50'}`;
-                
-                // 김태윤
-                const tItems = RAW_DATA.filter(d => d.student === '김태윤' && d.day === dayName);
-                if (tItems.length > 0 || isToday) {
-                    const row = document.createElement('div');
-                    row.className = baseClass;
-                    row.innerHTML = `
-                        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-md ${isToday ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'}">
-                            ${dayName}
-                        </div>
-                        <div class="ml-3 flex-grow space-y-1">
-                            ${tItems.length > 0 ? tItems.map(item => {
-                                const dur = calculateDuration(item.time);
-                                if (isToday) totalTodayMinutes += dur;
-                                return `
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="text-[11px] font-bold text-slate-700">${item.academy}</span>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="text-[10px] font-bold text-slate-600">${item.time}</span>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') : '<div class="text-slate-300 text-[10px] italic">일정 없음</div>'}
-                        </div>
-                    `;
-                    taeyoonContainer.appendChild(row);
-                    if (isToday) todaySummaryTaeyoon.innerHTML = tItems.length > 0 ? tItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '학원 일정이 없습니다.';
-                }
+function switchTab(who){
+  const tabs=document.querySelectorAll('.tab'); tabs.forEach(t=>t.className='tab');
+  if(who==='ty'){tabs[0].className='tab at';document.getElementById('ty-tbl').style.display='';document.getElementById('ny-tbl').style.display='none';}
+  else{tabs[1].className='tab an';document.getElementById('ty-tbl').style.display='none';document.getElementById('ny-tbl').style.display='';}
+}
 
-                // 김나윤
-                const nItems = RAW_DATA.filter(d => d.student === '김나윤' && d.day === dayName);
-                if (nItems.length > 0 || isToday) {
-                    const row = document.createElement('div');
-                    row.className = baseClass;
-                    row.innerHTML = `
-                        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-md ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}">
-                            ${dayName}
-                        </div>
-                        <div class="ml-3 flex-grow space-y-1">
-                            ${nItems.length > 0 ? nItems.map(item => {
-                                const dur = calculateDuration(item.time);
-                                if (isToday) totalTodayMinutes += dur;
-                                return `
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="text-[11px] font-bold text-slate-700">${item.academy}</span>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="text-[10px] font-bold text-slate-600">${item.time}</span>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') : '<div class="text-slate-300 text-[10px] italic">일정 없음</div>'}
-                        </div>
-                    `;
-                    nayoonContainer.appendChild(row);
-                    if (isToday) todaySummaryNayoon.innerHTML = nItems.length > 0 ? nItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '학원 일정이 없습니다.';
-                }
-            });
+/* TODAY */
+function renderToday(student,cid){
+  const tk=WD_KR[new Date().getDay()];
+  const c=document.getElementById(cid);
+  const gd=student.general.find(d=>d.day===tk);
+  const nd=student.nesin.find(d=>d.day===tk);
+  const all=[]; if(gd)gd.entries.forEach(e=>all.push({...e,isN:false})); if(nd)nd.entries.forEach(e=>all.push({...e,isN:true}));
+  if(!all.length){c.innerHTML='<div class="no-sch">📅 오늘 일정 없음</div>';return;}
+  c.innerHTML=all.map(e=>{
+    const s=sc(e.subject); const d=dur(e.time); const ds=d?fh(d):''; const nm=e.academy||e.subject;
+    return `<div class="stu-item">
+      <div class="sdot" style="background:${s.dot}"></div>
+      <div class="sinfo"><div class="an">${nm}${e.isN?' <span class="badge ns">내신</span>':''}</div><div class="sj">${e.subject}${e.note?' · '+e.note:''}</div></div>
+      <div class="stime"><div class="tm">${e.time||'—'}</div>${ds?`<div class="dur" style="background:${s.bg};color:${s.tx}">${ds}</div>`:''}</div>
+    </div>`;
+  }).join('');
+}
+renderToday(TY,'ty-today'); renderToday(NY,'ny-today');
 
-            document.getElementById('total-duration').textContent = `${Math.floor(totalTodayMinutes/60)}시간 ${totalTodayMinutes%60}분`;
-        }
+/* BARS */
+function renderBars(student,cid){
+  const map={};
+  for(const dd of student.general) for(const e of dd.entries){map[e.subject]=(map[e.subject]||0)+dur(e.time);}
+  const ents=Object.entries(map).sort((a,b)=>b[1]-a[1]); const mx=ents.length?ents[0][1]:1;
+  document.getElementById(cid).innerHTML=ents.map(([sj,mn])=>{
+    const s=sc(sj); const pct=Math.round(mn/mx*100);
+    return `<div class="bar-item"><div class="bar-lbl"><span style="color:${s.tx}">${sj}</span><span class="hrs">${fh(mn)}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${s.dot}"></div></div></div>`;
+  }).join('')||'<span style="font-size:11px;color:var(--text-muted)">데이터 없음</span>';
+}
+renderBars(TY,'ty-bars'); renderBars(NY,'ny-bars');
 
-        window.onload = () => {
-            updateDateTime();
-            renderSchedule();
-            setInterval(updateDateTime, 1000);
-            setInterval(renderSchedule, 60000);
-        };
-    </script>
+/* ACADEMY */
+function renderAcademy(){
+  const map={};
+  function add(st){ for(const dd of st.general) for(const e of dd.entries){ if(!e.academy||e.academy.includes('학교'))continue; if(!map[e.academy])map[e.academy]={mn:0,days:new Set()}; map[e.academy].mn+=dur(e.time); map[e.academy].days.add(dd.day); } }
+  add(TY); add(NY);
+  document.getElementById('ac-list').innerHTML=Object.entries(map).sort((a,b)=>b[1].mn-a[1].mn).map(([ac,d])=>{
+    const col=acColor(ac);
+    return `<div class="ac-row"><div class="ac-dot" style="background:${col}"></div><div class="ac-name">${ac}</div><div class="ac-days">${[...d.days].join('·')}요일</div><div class="ac-hrs" style="color:${col}">${fh(d.mn)}</div></div>`;
+  }).join('');
+}
+renderAcademy();
+</script>
 </body>
 </html>
