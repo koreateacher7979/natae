@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생별 학원 스케줄 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f8;
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden; /* 바탕화면용 고정 해상도 */
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+        .current-day {
+            background: #e0f2fe !important;
+            border: 2px solid #3b82f6 !important;
+        }
+        .subject-tag {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .subject-math { background-color: #fee2e2; color: #ef4444; }
+        .subject-eng { background-color: #dcfce7; color: #10b981; }
+        .subject-kor { background-color: #fef9c3; color: #eab308; }
+        .subject-sci { background-color: #e0e7ff; color: #6366f1; }
+        .subject-etc { background-color: #f3f4f6; color: #6b7280; }
+    </style>
+</head>
+<body class="p-8 flex flex-col">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6 px-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">학원 스케줄 통합 관리 대시보드</h1>
+            <p class="text-slate-500 mt-1 font-medium">개발자: 가치있는 미래교육연구소 대표 김병찬</p>
+        </div>
+        <div class="text-right">
+            <div id="current-time" class="text-2xl font-bold text-blue-600"></div>
+            <div id="current-date" class="text-slate-500 font-medium"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="grid grid-cols-2 gap-8 flex-grow">
+        
+        <!-- Student 1: 김태윤 -->
+        <section class="glass-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4 border-b pb-2">
+                <h2 class="text-2xl font-bold text-slate-700 flex items-center">
+                    <span class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3 text-lg">태윤</span>
+                    김태윤 학생 일정
+                </h2>
+                <span class="text-sm text-blue-500 font-bold bg-blue-50 px-3 py-1 rounded-full">중등/고등과정</span>
+            </div>
+            
+            <div id="taeyoon-schedule" class="grid grid-cols-1 gap-3 overflow-y-auto pr-2">
+                <!-- Weekly Schedule Rows Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- Student 2: 김나윤 -->
+        <section class="glass-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4 border-b pb-2">
+                <h2 class="text-2xl font-bold text-slate-700 flex items-center">
+                    <span class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-3 text-lg">나윤</span>
+                    김나윤 학생 일정
+                </h2>
+                <span class="text-sm text-emerald-500 font-bold bg-emerald-50 px-3 py-1 rounded-full">고등과정</span>
+            </div>
+            
+            <div id="nayoon-schedule" class="grid grid-cols-1 gap-3 overflow-y-auto pr-2">
+                <!-- Weekly Schedule Rows Rendered by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Summary: Today's Focus -->
+    <footer class="mt-8 grid grid-cols-3 gap-6 h-48">
+        <div class="glass-card p-5 border-l-8 border-blue-500">
+            <h3 class="font-bold text-slate-700 mb-2">현재 진행중/예정 일정 (태윤)</h3>
+            <div id="today-summary-taeyoon" class="text-slate-600 space-y-1"></div>
+        </div>
+        <div class="glass-card p-5 border-l-8 border-emerald-500">
+            <h3 class="font-bold text-slate-700 mb-2">현재 진행중/예정 일정 (나윤)</h3>
+            <div id="today-summary-nayoon" class="text-slate-600 space-y-1"></div>
+        </div>
+        <div class="glass-card p-5 bg-blue-600 text-white flex flex-col justify-center items-center text-center">
+            <p class="text-blue-100 mb-1">총 학습 소요 시간 (오늘)</p>
+            <div id="total-duration" class="text-4xl font-black">0시간 0분</div>
+            <p class="text-xs text-blue-200 mt-2">오늘도 힘내세요! 화이팅!</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. 데이터 설정 (구글 스프레드시트 게시 후 CSV URL을 여기에 넣으세요) ---
+        // 스프레드시트 -> 파일 -> 공유 -> 웹에 게시 -> 쉼표로 구분된 값(.csv) 선택
+        const SHEET_CSV_URL = ''; // 여기에 URL 입력 시 실시간 반영
+
+        // 기본 데이터 (연동 실패 시 또는 초기 로드용)
+        const RAW_DATA = [
+            { student: '김태윤', day: '월', subject: '영어', academy: '손샘영어', time: '18:30~20:30', memo: '' },
+            { student: '김태윤', day: '화', subject: '수학', academy: '옥수학', time: '16:30~19:00', memo: '' },
+            { student: '김태윤', day: '목', subject: '영어', academy: '손샘영어', time: '18:30~20:30', memo: '' },
+            { student: '김태윤', day: '금', subject: '수학', academy: '옥수학', time: '16:30~20:30', memo: '' },
+            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어', time: '11:00~14:00', memo: '' },
+            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학(월성점)', time: '14:00~15:00', memo: '' },
+            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어(특강)', time: '15:00~16:00', memo: '' },
+            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학', time: '16:30~19:00', memo: '' },
+            { student: '김나윤', day: '월', subject: '수학', academy: '디자인오브수학', time: '19:30~22:00', memo: '' },
+            { student: '김나윤', day: '화', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30', memo: '' },
+            { student: '김나윤', day: '수', subject: '자습', academy: '야간자습(학교)', time: '18:00~21:00', memo: '' },
+            { student: '김나윤', day: '목', subject: '영어', academy: '일등영어', time: '19:00~21:00', memo: '' },
+            { student: '김나윤', day: '금', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30', memo: '' },
+            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '13:30~16:00', memo: '' },
+            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '16:10~17:10', memo: '' },
+            { student: '김나윤', day: '일', subject: '영어', academy: '일등영어', time: '19:00~21:00', memo: '' }
+        ];
+
+        const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+            const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            document.getElementById('current-time').textContent = timeStr;
+            document.getElementById('current-date').textContent = dateStr;
+        }
+
+        function getSubjectClass(subject) {
+            if (subject.includes('수학')) return 'subject-math';
+            if (subject.includes('영어')) return 'subject-eng';
+            if (subject.includes('국어')) return 'subject-kor';
+            if (subject.includes('과학')) return 'subject-sci';
+            return 'subject-etc';
+        }
+
+        function calculateDuration(timeStr) {
+            try {
+                const [start, end] = timeStr.split('~');
+                if (!start || !end) return 0;
+                
+                const startHour = parseInt(start.split(':')[0]);
+                const startMin = parseInt(start.split(':')[1] || 0);
+                const endHour = parseInt(end.split(':')[0]);
+                const endMin = parseInt(end.split(':')[1] || 0);
+                
+                return (endHour * 60 + endMin) - (startHour * 60 + startMin);
+            } catch (e) { return 0; }
+        }
+
+        function renderSchedule() {
+            const today = daysOfWeek[new Date().getDay()];
+            const taeyoonContainer = document.getElementById('taeyoon-schedule');
+            const nayoonContainer = document.getElementById('nayoon-schedule');
+            const todaySummaryTaeyoon = document.getElementById('today-summary-taeyoon');
+            const todaySummaryNayoon = document.getElementById('today-summary-nayoon');
+            
+            taeyoonContainer.innerHTML = '';
+            nayoonContainer.innerHTML = '';
+            todaySummaryTaeyoon.innerHTML = '';
+            todaySummaryNayoon.innerHTML = '';
+
+            let totalTodayMinutes = 0;
+
+            // 요일별 정렬을 위해 0~6 순서로 처리
+            [1, 2, 3, 4, 5, 6, 0].forEach(dayIdx => {
+                const dayName = daysOfWeek[dayIdx];
+                const isToday = dayName === today;
+
+                const dayClasses = `flex items-start p-3 rounded-xl border ${isToday ? 'current-day shadow-md' : 'bg-white border-slate-100'}`;
+                
+                // 김태윤 필터
+                const tItems = RAW_DATA.filter(d => d.student === '김태윤' && d.day === dayName);
+                if (tItems.length > 0 || isToday) {
+                    const row = document.createElement('div');
+                    row.className = dayClasses;
+                    row.innerHTML = `
+                        <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center font-bold text-lg rounded-lg ${isToday ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500'}">
+                            ${dayName}
+                        </div>
+                        <div class="ml-4 flex-grow space-y-2">
+                            ${tItems.length > 0 ? tItems.map(item => {
+                                const dur = calculateDuration(item.time);
+                                if (isToday) totalTodayMinutes += dur;
+                                return `
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
+                                            <span class="font-bold text-slate-700">${item.academy}</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-semibold text-slate-600">${item.time}</div>
+                                            <div class="text-xs text-slate-400">(${Math.floor(dur/60)}시간 ${dur%60}분)</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') : '<div class="text-slate-300 italic py-2">학원 일정 없음</div>'}
+                        </div>
+                    `;
+                    taeyoonContainer.appendChild(row);
+                    if (isToday) {
+                        todaySummaryTaeyoon.innerHTML = tItems.length > 0 ? tItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '휴식일입니다.';
+                    }
+                }
+
+                // 김나윤 필터
+                const nItems = RAW_DATA.filter(d => d.student === '김나윤' && d.day === dayName);
+                if (nItems.length > 0 || isToday) {
+                    const row = document.createElement('div');
+                    row.className = dayClasses;
+                    row.innerHTML = `
+                        <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center font-bold text-lg rounded-lg ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}">
+                            ${dayName}
+                        </div>
+                        <div class="ml-4 flex-grow space-y-2">
+                            ${nItems.length > 0 ? nItems.map(item => {
+                                const dur = calculateDuration(item.time);
+                                if (isToday) totalTodayMinutes += dur;
+                                return `
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
+                                            <span class="font-bold text-slate-700">${item.academy}</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-semibold text-slate-600">${item.time}</div>
+                                            <div class="text-xs text-slate-400">(${Math.floor(dur/60)}시간 ${dur%60}분)</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') : '<div class="text-slate-300 italic py-2">학원 일정 없음</div>'}
+                        </div>
+                    `;
+                    nayoonContainer.appendChild(row);
+                    if (isToday) {
+                        todaySummaryNayoon.innerHTML = nItems.length > 0 ? nItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '휴식일입니다.';
+                    }
+                }
+            });
+
+            document.getElementById('total-duration').textContent = `${Math.floor(totalTodayMinutes/60)}시간 ${totalTodayMinutes%60}분`;
+        }
+
+        // 초기화
+        window.onload = () => {
+            updateDateTime();
+            renderSchedule();
+            setInterval(updateDateTime, 1000);
+            
+            // 30분마다 데이터 갱신 시도 (실제 연동 시)
+            setInterval(renderSchedule, 30 * 60 * 1000);
+        };
+    </script>
+</body>
+</html>
