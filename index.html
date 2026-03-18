@@ -10,11 +10,15 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f0f4f8;
-            width: 1920px;
-            height: 1080px;
-            overflow: hidden; /* 바탕화면용 고정 해상도, 스크롤 방지 */
+            /* 고정 해상도 대신 뷰포트 크기에 맞춤 */
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+            overflow: hidden; /* 전체 스크롤 방지 */
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
@@ -22,6 +26,9 @@
             border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(31, 38, 135, 0.08);
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* flex 자식 요소의 크기 축소를 허용 */
         }
         .current-day {
             background: #f0f9ff !important;
@@ -40,79 +47,79 @@
         .subject-sci { background-color: #e0e7ff; color: #6366f1; }
         .subject-etc { background-color: #f3f4f6; color: #6b7280; }
         
-        /* 스크롤바 숨기기 (혹시 내용이 넘칠 경우 대비) */
-        ::-webkit-scrollbar {
+        /* 내부 리스트 스크롤바 최적화 */
+        .custom-scroll::-webkit-scrollbar {
             width: 4px;
         }
-        ::-webkit-scrollbar-thumb {
+        .custom-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 10px;
         }
     </style>
 </head>
-<body class="p-6">
+<body>
 
-    <!-- Header: 높이 축소 -->
-    <header class="flex justify-between items-end mb-4 px-2">
+    <!-- Header -->
+    <header class="flex justify-between items-end mb-4 px-2 flex-shrink-0">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800 leading-tight">학원 스케줄 통합 관리 대시보드</h1>
-            <p class="text-slate-500 text-sm font-medium">개발자: 가치있는 미래교육연구소 대표 김병찬</p>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800 leading-tight">학원 스케줄 통합 관리 대시보드</h1>
+            <p class="text-slate-500 text-xs md:text-sm font-medium">개발자: 가치있는 미래교육연구소 대표 김병찬</p>
         </div>
         <div class="text-right">
-            <div id="current-time" class="text-2xl font-bold text-blue-600 leading-none"></div>
-            <div id="current-date" class="text-slate-500 text-sm font-medium mt-1"></div>
+            <div id="current-time" class="text-xl md:text-2xl font-bold text-blue-600 leading-none"></div>
+            <div id="current-date" class="text-slate-500 text-xs md:text-sm font-medium mt-1"></div>
         </div>
     </header>
 
-    <!-- Main Content: 레이아웃 최적화 -->
-    <main class="grid grid-cols-2 gap-6 flex-grow overflow-hidden">
+    <!-- Main Content: 화면 크기에 맞춰 유동적으로 변화 -->
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow min-height-0 overflow-hidden">
         
         <!-- Student 1: 김태윤 -->
-        <section class="glass-card p-4 flex flex-col overflow-hidden">
+        <section class="glass-card p-4">
             <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2 flex-shrink-0">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center">
-                    <span class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 text-sm">태윤</span>
+                <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center">
+                    <span class="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 text-xs">태윤</span>
                     김태윤 학생 일정
                 </h2>
-                <span class="text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded-full">중등/고등과정</span>
+                <span class="text-[10px] md:text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded-full">중등/고등과정</span>
             </div>
             
-            <div id="taeyoon-schedule" class="grid grid-cols-1 gap-2 overflow-y-auto pr-1 flex-grow">
+            <div id="taeyoon-schedule" class="flex-grow overflow-y-auto custom-scroll pr-1 space-y-2">
                 <!-- Weekly Schedule Rows -->
             </div>
         </section>
 
         <!-- Student 2: 김나윤 -->
-        <section class="glass-card p-4 flex flex-col overflow-hidden">
+        <section class="glass-card p-4">
             <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2 flex-shrink-0">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center">
-                    <span class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-2 text-sm">나윤</span>
+                <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center">
+                    <span class="w-7 h-7 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-2 text-xs">나윤</span>
                     김나윤 학생 일정
                 </h2>
-                <span class="text-xs text-emerald-500 font-bold bg-emerald-50 px-2 py-1 rounded-full">고등과정</span>
+                <span class="text-[10px] md:text-xs text-emerald-500 font-bold bg-emerald-50 px-2 py-1 rounded-full">고등과정</span>
             </div>
             
-            <div id="nayoon-schedule" class="grid grid-cols-1 gap-2 overflow-y-auto pr-1 flex-grow">
+            <div id="nayoon-schedule" class="flex-grow overflow-y-auto custom-scroll pr-1 space-y-2">
                 <!-- Weekly Schedule Rows -->
             </div>
         </section>
 
     </main>
 
-    <!-- Footer Summary: 높이 축소 (h-48 -> h-36) -->
-    <footer class="mt-6 grid grid-cols-3 gap-6 h-36 flex-shrink-0">
-        <div class="glass-card p-4 border-l-4 border-blue-500 flex flex-col justify-center">
-            <h3 class="font-bold text-slate-700 mb-1 text-sm">오늘의 일정 (태윤)</h3>
-            <div id="today-summary-taeyoon" class="text-slate-600 text-xs leading-relaxed overflow-y-auto"></div>
+    <!-- Footer Summary: 하단 고정 높이 -->
+    <footer class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0" style="height: 15%;">
+        <div class="glass-card p-3 border-l-4 border-blue-500 flex flex-col justify-center">
+            <h3 class="font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">오늘의 일정 (태윤)</h3>
+            <div id="today-summary-taeyoon" class="text-slate-600 text-[11px] leading-tight overflow-y-auto custom-scroll"></div>
         </div>
-        <div class="glass-card p-4 border-l-4 border-emerald-500 flex flex-col justify-center">
-            <h3 class="font-bold text-slate-700 mb-1 text-sm">오늘의 일정 (나윤)</h3>
-            <div id="today-summary-nayoon" class="text-slate-600 text-xs leading-relaxed overflow-y-auto"></div>
+        <div class="glass-card p-3 border-l-4 border-emerald-500 flex flex-col justify-center">
+            <h3 class="font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">오늘의 일정 (나윤)</h3>
+            <div id="today-summary-nayoon" class="text-slate-600 text-[11px] leading-tight overflow-y-auto custom-scroll"></div>
         </div>
-        <div class="glass-card p-4 bg-gradient-to-br from-blue-600 to-blue-700 text-white flex flex-col justify-center items-center text-center">
-            <p class="text-blue-100 text-xs mb-1">총 학습 소요 시간 (오늘)</p>
-            <div id="total-duration" class="text-3xl font-black">0시간 0분</div>
-            <p class="text-[10px] text-blue-200 mt-1 opacity-80">가치있는 미래교육연구소</p>
+        <div class="glass-card p-3 bg-gradient-to-br from-blue-600 to-blue-700 text-white flex flex-col justify-center items-center text-center">
+            <p class="text-blue-100 text-[10px] mb-1">총 학습 소요 시간 (오늘)</p>
+            <div id="total-duration" class="text-2xl md:text-3xl font-black">0시간 0분</div>
+            <p class="text-[9px] text-blue-200 mt-1 opacity-70">가치있는 미래교육연구소</p>
         </div>
     </footer>
 
@@ -175,6 +182,7 @@
             
             let totalTodayMinutes = 0;
 
+            // 월요일부터 일요일 순으로 렌더링
             [1, 2, 3, 4, 5, 6, 0].forEach(dayIdx => {
                 const dayName = daysOfWeek[dayIdx];
                 const isToday = dayName === today;
@@ -187,7 +195,7 @@
                     const row = document.createElement('div');
                     row.className = baseClass;
                     row.innerHTML = `
-                        <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center font-bold text-base rounded-md ${isToday ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'}">
+                        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-md ${isToday ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'}">
                             ${dayName}
                         </div>
                         <div class="ml-3 flex-grow space-y-1">
@@ -198,15 +206,14 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-2">
                                             <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="text-xs font-bold text-slate-700">${item.academy}</span>
+                                            <span class="text-[11px] font-bold text-slate-700">${item.academy}</span>
                                         </div>
                                         <div class="text-right">
-                                            <span class="text-[11px] font-bold text-slate-600">${item.time}</span>
-                                            <span class="text-[10px] text-slate-400 ml-1">(${Math.floor(dur/60)}h ${dur%60}m)</span>
+                                            <span class="text-[10px] font-bold text-slate-600">${item.time}</span>
                                         </div>
                                     </div>
                                 `;
-                            }).join('') : '<div class="text-slate-300 text-xs italic">일정 없음</div>'}
+                            }).join('') : '<div class="text-slate-300 text-[10px] italic">일정 없음</div>'}
                         </div>
                     `;
                     taeyoonContainer.appendChild(row);
@@ -219,7 +226,7 @@
                     const row = document.createElement('div');
                     row.className = baseClass;
                     row.innerHTML = `
-                        <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center font-bold text-base rounded-md ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}">
+                        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-md ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}">
                             ${dayName}
                         </div>
                         <div class="ml-3 flex-grow space-y-1">
@@ -230,15 +237,14 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-2">
                                             <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="text-xs font-bold text-slate-700">${item.academy}</span>
+                                            <span class="text-[11px] font-bold text-slate-700">${item.academy}</span>
                                         </div>
                                         <div class="text-right">
-                                            <span class="text-[11px] font-bold text-slate-600">${item.time}</span>
-                                            <span class="text-[10px] text-slate-400 ml-1">(${Math.floor(dur/60)}h ${dur%60}m)</span>
+                                            <span class="text-[10px] font-bold text-slate-600">${item.time}</span>
                                         </div>
                                     </div>
                                 `;
-                            }).join('') : '<div class="text-slate-300 text-xs italic">일정 없음</div>'}
+                            }).join('') : '<div class="text-slate-300 text-[10px] italic">일정 없음</div>'}
                         </div>
                     `;
                     nayoonContainer.appendChild(row);
@@ -253,7 +259,7 @@
             updateDateTime();
             renderSchedule();
             setInterval(updateDateTime, 1000);
-            setInterval(renderSchedule, 60000); // 1분마다 요일 체크 및 갱신
+            setInterval(renderSchedule, 60000);
         };
     </script>
 </body>
