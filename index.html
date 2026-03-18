@@ -1,269 +1,997 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학생별 학원 스케줄 대시보드</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0f4f8;
-            width: 1920px;
-            height: 1080px;
-            overflow: hidden; /* 바탕화면용 고정 해상도 */
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-        }
-        .current-day {
-            background: #e0f2fe !important;
-            border: 2px solid #3b82f6 !important;
-        }
-        .subject-tag {
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .subject-math { background-color: #fee2e2; color: #ef4444; }
-        .subject-eng { background-color: #dcfce7; color: #10b981; }
-        .subject-kor { background-color: #fef9c3; color: #eab308; }
-        .subject-sci { background-color: #e0e7ff; color: #6366f1; }
-        .subject-etc { background-color: #f3f4f6; color: #6b7280; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>학원 스케줄 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --primary: #1e3a5f;
+    --accent: #2e86de;
+    --accent2: #ff6b6b;
+    --accent3: #26de81;
+    --accent4: #fd9644;
+    --accent5: #a55eea;
+    --text: #1a202c;
+    --text-sub: #4a5568;
+    --text-muted: #718096;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.14);
+    --taeyun: #2e86de;
+    --nayun: #ff6b6b;
+    --math-color: #a55eea;
+    --english-color: #26de81;
+    --korean-color: #fd9644;
+    --science-color: #45aaf2;
+    --school-color: #778ca3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 1920px;
+    min-height: 1080px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────────── */
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 60%, #2b6cb0 100%);
+    padding: 0 40px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30%;
+    width: 300px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .header-icon {
+    width: 46px; height: 46px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .header-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header-subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    margin-top: 2px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .developer-badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.9);
+    font-size: 12px;
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.6;
+  }
+  .developer-badge .dev-label {
+    color: rgba(255,255,255,0.55);
+    font-size: 10px;
+    font-weight: 400;
+  }
+  .datetime-box {
+    text-align: right;
+    color: white;
+  }
+  .datetime-box .time {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .datetime-box .date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+
+  /* ── MAIN LAYOUT ──────────────────────────────── */
+  .main {
+    display: grid;
+    grid-template-columns: 420px 1fr 360px;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    padding: 20px 40px 20px;
+    height: calc(1080px - 80px);
+  }
+
+  /* ── TODAY PANEL ──────────────────────────────── */
+  .today-panel {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── SCHEDULE PANEL ──────────────────────────── */
+  .schedule-panel {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── STATS PANEL ──────────────────────────────── */
+  .stats-panel {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── CARD ──────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+  }
+  .card:hover { box-shadow: var(--shadow-hover); }
+  .card-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 16px; }
+  .card-body { padding: 16px 20px; }
+
+  /* ── TODAY SCHEDULE ─────────────────────────── */
+  .today-date-banner {
+    background: linear-gradient(135deg, #1e3a5f, #2e86de);
+    border-radius: 18px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+  }
+  .today-date-banner .today-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 600;
+  }
+  .today-date-banner .today-full {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+  .today-date-banner .today-day {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    margin-top: 4px;
+  }
+
+  .today-student-block {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .today-student-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    border: 2px solid rgba(255,255,255,0.4);
+  }
+  .taeyun-header { background: linear-gradient(90deg, #1a56c4, #2e86de); }
+  .nayun-header  { background: linear-gradient(90deg, #c0392b, #ff6b6b); }
+
+  .today-items {
+    background: white;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  .today-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid #f0f4f8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s;
+  }
+  .today-item:last-child { border-bottom: none; }
+  .today-item:hover { background: #f8fafc; }
+  .today-item .subject-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .today-item .item-info { flex: 1; }
+  .today-item .item-academy { font-size: 13px; font-weight: 600; color: var(--text); }
+  .today-item .item-subject { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .today-item .item-time {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    font-family: 'Montserrat', sans-serif;
+  }
+  .duration-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .no-schedule {
+    padding: 20px 18px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ── WEEKLY SCHEDULE TABLE ──────────────────── */
+  .weekly-card { flex: 1; }
+  .week-tab-bar {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 0;
+    padding-top: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .week-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: all 0.2s;
+    color: var(--text-muted);
+  }
+  .week-tab.active-taeyun {
+    color: var(--taeyun);
+    background: white;
+    border-color: var(--border);
+    border-bottom-color: white;
+    margin-bottom: -1px;
+  }
+  .week-tab.active-nayun {
+    color: var(--nayun);
+    background: white;
+    border-color: var(--border);
+    border-bottom-color: white;
+    margin-bottom: -1px;
+  }
+  .week-tab:not(.active-taeyun):not(.active-nayun):hover {
+    color: var(--text);
+    background: #f8fafc;
+  }
+
+  .schedule-table-wrap { overflow: hidden; }
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .schedule-table th {
+    background: #f8fafc;
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--text-sub);
+    border-bottom: 2px solid var(--border);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+  .schedule-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f4f8;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tr:hover td { background: #f8fafc; }
+  .day-cell {
+    font-weight: 800;
+    font-size: 13px;
+    text-align: center;
+    width: 40px;
+  }
+  .day-mon { color: #2e86de; }
+  .day-tue { color: #fd9644; }
+  .day-wed { color: #26de81; }
+  .day-thu { color: #a55eea; }
+  .day-fri { color: #ff6b6b; }
+  .day-sat { color: #45aaf2; }
+  .day-sun { color: #fc5c65; }
+  .day-today-highlight { 
+    background: rgba(46,134,222,0.08) !important; 
+  }
+  .day-today-highlight .day-cell { 
+    color: white !important;
+  }
+  .today-marker {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .schedule-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px 2px 2px 0;
+    line-height: 1.4;
+  }
+  .schedule-pill .pill-time {
+    font-size: 10px;
+    opacity: 0.8;
+    font-family: 'Montserrat', sans-serif;
+    margin-left: 4px;
+  }
+  .internal-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #fff3cd;
+    color: #856404;
+    margin-left: 6px;
+    border: 1px solid #ffc107;
+  }
+  .nesin-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #d4edda;
+    color: #155724;
+    margin-left: 6px;
+    border: 1px solid #28a745;
+  }
+
+  /* ── STATS ──────────────────────────────────────── */
+  .stat-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fafbfc;
+  }
+  .stat-row .stat-label { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+  .stat-row .stat-val { font-size: 18px; font-weight: 800; font-family: 'Montserrat', sans-serif; }
+
+  .subject-bar-wrap { margin-top: 6px; }
+  .subject-bar-item { margin-bottom: 10px; }
+  .subject-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .subject-bar-label .hours { font-family: 'Montserrat', sans-serif; color: var(--text-muted); }
+  .subject-bar-track {
+    height: 8px;
+    background: #eef2f7;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .subject-bar-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.8s ease;
+  }
+
+  .academy-list { display: flex; flex-direction: column; gap: 8px; }
+  .academy-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fafbfc;
+  }
+  .academy-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .academy-name { flex: 1; font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .academy-days { font-size: 11px; color: var(--text-muted); }
+  .academy-hours { font-size: 13px; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--text-sub); }
+
+  .legend-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-sub); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* scroll suppression for fixed layout */
+  .schedule-table-wrap { max-height: 520px; overflow-y: auto; }
+  .schedule-table-wrap::-webkit-scrollbar { width: 4px; }
+  .schedule-table-wrap::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
+
+  /* inset-nesin highlight */
+  .nesin-row td { background: rgba(40,167,69,0.04) !important; }
+</style>
 </head>
-<body class="p-8 flex flex-col">
+<body>
 
-    <!-- Header -->
-    <header class="flex justify-between items-center mb-6 px-4">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-800">학원 스케줄 통합 관리 대시보드</h1>
-            <p class="text-slate-500 mt-1 font-medium">개발자: 가치있는 미래교육연구소 대표 김병찬</p>
+<!-- ══ HEADER ════════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">🏫</div>
+    <div>
+      <div class="header-title">학원 스케줄 대시보드</div>
+      <div class="header-subtitle">나윤 · 태윤 학생 학원 일정 관리 시스템</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="developer-badge">
+      <div class="dev-label">개발자</div>
+      <div>가치있는 미래교육연구소 대표 <strong>김병찬</strong></div>
+    </div>
+    <div class="datetime-box">
+      <div class="time" id="clock">00:00:00</div>
+      <div class="date" id="dateStr">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- ── TODAY PANEL ─────────────────────────── -->
+  <div class="today-panel">
+    <!-- Date Banner -->
+    <div class="today-date-banner">
+      <div class="today-label">📅 TODAY'S SCHEDULE</div>
+      <div class="today-full" id="todayFull">-</div>
+      <div class="today-day" id="todayDayFull">-</div>
+    </div>
+
+    <!-- 태윤 Today -->
+    <div class="today-student-block">
+      <div class="today-student-header taeyun-header">
+        <div class="avatar">태</div>
+        김태윤 — 오늘의 일정
+      </div>
+      <div class="today-items" id="taeyun-today">
+        <div class="no-schedule">⏳ 일정 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 나윤 Today -->
+    <div class="today-student-block">
+      <div class="today-student-header nayun-header">
+        <div class="avatar">나</div>
+        김나윤 — 오늘의 일정
+      </div>
+      <div class="today-items" id="nayun-today">
+        <div class="no-schedule">⏳ 일정 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🎨</span>과목 범례</div>
+      </div>
+      <div class="card-body">
+        <div class="legend-wrap">
+          <div class="legend-item"><div class="legend-dot" style="background:#26de81"></div>영어</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a55eea"></div>수학</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fd9644"></div>국어</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#45aaf2"></div>과학</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#778ca3"></div>학교자습</div>
         </div>
-        <div class="text-right">
-            <div id="current-time" class="text-2xl font-bold text-blue-600"></div>
-            <div id="current-date" class="text-slate-500 font-medium"></div>
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="internal-badge">내신대비</span><span style="font-size:11px;color:var(--text-muted)">: 내신대비 특별 일정</span>
+          <span class="nesin-badge">진행중</span>
         </div>
-    </header>
+      </div>
+    </div>
+  </div>
 
-    <!-- Main Content -->
-    <main class="grid grid-cols-2 gap-8 flex-grow">
-        
-        <!-- Student 1: 김태윤 -->
-        <section class="glass-card p-6 flex flex-col">
-            <div class="flex items-center justify-between mb-4 border-b pb-2">
-                <h2 class="text-2xl font-bold text-slate-700 flex items-center">
-                    <span class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3 text-lg">태윤</span>
-                    김태윤 학생 일정
-                </h2>
-                <span class="text-sm text-blue-500 font-bold bg-blue-50 px-3 py-1 rounded-full">중등/고등과정</span>
-            </div>
-            
-            <div id="taeyoon-schedule" class="grid grid-cols-1 gap-3 overflow-y-auto pr-2">
-                <!-- Weekly Schedule Rows Rendered by JS -->
-            </div>
-        </section>
+  <!-- ── SCHEDULE PANEL ─────────────────────── -->
+  <div class="schedule-panel">
+    <div class="card weekly-card" style="flex:1; display:flex; flex-direction:column;">
+      <div class="week-tab-bar" id="tabBar">
+        <div class="week-tab active-taeyun" onclick="switchTab('taeyun')">🧑‍🎓 김태윤</div>
+        <div class="week-tab" onclick="switchTab('nayun')">👩‍🎓 김나윤</div>
+      </div>
 
-        <!-- Student 2: 김나윤 -->
-        <section class="glass-card p-6 flex flex-col">
-            <div class="flex items-center justify-between mb-4 border-b pb-2">
-                <h2 class="text-2xl font-bold text-slate-700 flex items-center">
-                    <span class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-3 text-lg">나윤</span>
-                    김나윤 학생 일정
-                </h2>
-                <span class="text-sm text-emerald-500 font-bold bg-emerald-50 px-3 py-1 rounded-full">고등과정</span>
-            </div>
-            
-            <div id="nayoon-schedule" class="grid grid-cols-1 gap-3 overflow-y-auto pr-2">
-                <!-- Weekly Schedule Rows Rendered by JS -->
-            </div>
-        </section>
+      <!-- 태윤 Table -->
+      <div id="taeyun-table" class="schedule-table-wrap" style="flex:1;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>요일</th>
+              <th>일반 일정</th>
+              <th>내신대비 일정</th>
+            </tr>
+          </thead>
+          <tbody id="taeyun-tbody"></tbody>
+        </table>
+      </div>
 
-    </main>
+      <!-- 나윤 Table -->
+      <div id="nayun-table" class="schedule-table-wrap" style="flex:1; display:none;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>요일</th>
+              <th>일반 일정</th>
+              <th>내신대비 일정</th>
+            </tr>
+          </thead>
+          <tbody id="nayun-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-    <!-- Footer Summary: Today's Focus -->
-    <footer class="mt-8 grid grid-cols-3 gap-6 h-48">
-        <div class="glass-card p-5 border-l-8 border-blue-500">
-            <h3 class="font-bold text-slate-700 mb-2">현재 진행중/예정 일정 (태윤)</h3>
-            <div id="today-summary-taeyoon" class="text-slate-600 space-y-1"></div>
-        </div>
-        <div class="glass-card p-5 border-l-8 border-emerald-500">
-            <h3 class="font-bold text-slate-700 mb-2">현재 진행중/예정 일정 (나윤)</h3>
-            <div id="today-summary-nayoon" class="text-slate-600 space-y-1"></div>
-        </div>
-        <div class="glass-card p-5 bg-blue-600 text-white flex flex-col justify-center items-center text-center">
-            <p class="text-blue-100 mb-1">총 학습 소요 시간 (오늘)</p>
-            <div id="total-duration" class="text-4xl font-black">0시간 0분</div>
-            <p class="text-xs text-blue-200 mt-2">오늘도 힘내세요! 화이팅!</p>
-        </div>
-    </footer>
+  <!-- ── STATS PANEL ─────────────────────────── -->
+  <div class="stats-panel">
 
-    <script>
-        // --- 1. 데이터 설정 (구글 스프레드시트 게시 후 CSV URL을 여기에 넣으세요) ---
-        // 스프레드시트 -> 파일 -> 공유 -> 웹에 게시 -> 쉼표로 구분된 값(.csv) 선택
-        const SHEET_CSV_URL = ''; // 여기에 URL 입력 시 실시간 반영
+    <!-- 태윤 Stats -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📊</span>김태윤 주간 학습 시간</div>
+        <span style="font-size:11px; color:var(--taeyun); font-weight:700;">일반일정 기준</span>
+      </div>
+      <div class="card-body">
+        <div class="subject-bar-wrap" id="taeyun-bars"></div>
+      </div>
+    </div>
 
-        // 기본 데이터 (연동 실패 시 또는 초기 로드용)
-        const RAW_DATA = [
-            { student: '김태윤', day: '월', subject: '영어', academy: '손샘영어', time: '18:30~20:30', memo: '' },
-            { student: '김태윤', day: '화', subject: '수학', academy: '옥수학', time: '16:30~19:00', memo: '' },
-            { student: '김태윤', day: '목', subject: '영어', academy: '손샘영어', time: '18:30~20:30', memo: '' },
-            { student: '김태윤', day: '금', subject: '수학', academy: '옥수학', time: '16:30~20:30', memo: '' },
-            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어', time: '11:00~14:00', memo: '' },
-            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학(월성점)', time: '14:00~15:00', memo: '' },
-            { student: '김태윤', day: '토', subject: '국어', academy: '봉국어(특강)', time: '15:00~16:00', memo: '' },
-            { student: '김태윤', day: '토', subject: '수학', academy: '옥수학', time: '16:30~19:00', memo: '' },
-            { student: '김나윤', day: '월', subject: '수학', academy: '디자인오브수학', time: '19:30~22:00', memo: '' },
-            { student: '김나윤', day: '화', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30', memo: '' },
-            { student: '김나윤', day: '수', subject: '자습', academy: '야간자습(학교)', time: '18:00~21:00', memo: '' },
-            { student: '김나윤', day: '목', subject: '영어', academy: '일등영어', time: '19:00~21:00', memo: '' },
-            { student: '김나윤', day: '금', subject: '자습', academy: '심야자습(학교)', time: '19:00~22:30', memo: '' },
-            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '13:30~16:00', memo: '' },
-            { student: '김나윤', day: '토', subject: '국어', academy: '인사이트 국어', time: '16:10~17:10', memo: '' },
-            { student: '김나윤', day: '일', subject: '영어', academy: '일등영어', time: '19:00~21:00', memo: '' }
-        ];
+    <!-- 나윤 Stats -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📊</span>김나윤 주간 학습 시간</div>
+        <span style="font-size:11px; color:var(--nayun); font-weight:700;">일반일정 기준</span>
+      </div>
+      <div class="card-body">
+        <div class="subject-bar-wrap" id="nayun-bars"></div>
+      </div>
+    </div>
 
-        const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
-        const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+    <!-- Academy List -->
+    <div class="card" style="flex:1;">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🏛️</span>학원별 주간 소요시간</div>
+      </div>
+      <div class="card-body" style="padding-top:10px;">
+        <div class="academy-list" id="academy-list"></div>
+      </div>
+    </div>
 
-        function updateDateTime() {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-            const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            document.getElementById('current-time').textContent = timeStr;
-            document.getElementById('current-date').textContent = dateStr;
-        }
+  </div>
+</div>
 
-        function getSubjectClass(subject) {
-            if (subject.includes('수학')) return 'subject-math';
-            if (subject.includes('영어')) return 'subject-eng';
-            if (subject.includes('국어')) return 'subject-kor';
-            if (subject.includes('과학')) return 'subject-sci';
-            return 'subject-etc';
-        }
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA (parsed from Google Sheets)
+// ═══════════════════════════════════════════════════════
+const DAYS = ['월','화','수','목','금','토','일'];
+const DAY_CLASSES = { '월':'day-mon','화':'day-tue','수':'day-wed','목':'day-thu','금':'day-fri','토':'day-sat','일':'day-sun' };
 
-        function calculateDuration(timeStr) {
-            try {
-                const [start, end] = timeStr.split('~');
-                if (!start || !end) return 0;
-                
-                const startHour = parseInt(start.split(':')[0]);
-                const startMin = parseInt(start.split(':')[1] || 0);
-                const endHour = parseInt(end.split(':')[0]);
-                const endMin = parseInt(end.split(':')[1] || 0);
-                
-                return (endHour * 60 + endMin) - (startHour * 60 + startMin);
-            } catch (e) { return 0; }
-        }
+// Subject → color
+const SUBJECT_COLOR = {
+  '영어': { bg:'#e8fdf1', text:'#1a9c58', dot:'#26de81' },
+  '수학': { bg:'#f3e8ff', text:'#7c3aed', dot:'#a55eea' },
+  '국어': { bg:'#fff4e8', text:'#c05621', dot:'#fd9644' },
+  '과학': { bg:'#e8f4fd', text:'#1565c0', dot:'#45aaf2' },
+  '학교': { bg:'#f0f2f5', text:'#546e7a', dot:'#778ca3' },
+};
+function getSubjectStyle(subject) {
+  for (const key of Object.keys(SUBJECT_COLOR)) {
+    if (subject.includes(key)) return SUBJECT_COLOR[key];
+  }
+  return { bg:'#f0f4f8', text:'#4a5568', dot:'#a0aec0' };
+}
 
-        function renderSchedule() {
-            const today = daysOfWeek[new Date().getDay()];
-            const taeyoonContainer = document.getElementById('taeyoon-schedule');
-            const nayoonContainer = document.getElementById('nayoon-schedule');
-            const todaySummaryTaeyoon = document.getElementById('today-summary-taeyoon');
-            const todaySummaryNayoon = document.getElementById('today-summary-nayoon');
-            
-            taeyoonContainer.innerHTML = '';
-            nayoonContainer.innerHTML = '';
-            todaySummaryTaeyoon.innerHTML = '';
-            todaySummaryNayoon.innerHTML = '';
+// Academy colors
+const ACADEMY_COLORS = [
+  '#2e86de','#ff6b6b','#a55eea','#26de81','#fd9644','#45aaf2','#fc5c65','#778ca3'
+];
+const academyColorMap = {};
+let colorIdx = 0;
+function getAcademyColor(name) {
+  if (!academyColorMap[name]) {
+    academyColorMap[name] = ACADEMY_COLORS[colorIdx % ACADEMY_COLORS.length];
+    colorIdx++;
+  }
+  return academyColorMap[name];
+}
 
-            let totalTodayMinutes = 0;
+// Parse time string "HH:MM~HH:MM" → minutes
+function parseDuration(timeStr) {
+  if (!timeStr) return 0;
+  // Handle "~HH:MM" (until)
+  const matchUntil = timeStr.match(/^~(\d{1,2}):(\d{2})/);
+  if (matchUntil) return 60; // rough estimate
+  const match = timeStr.match(/(\d{1,2}):(\d{2})[~-](\d{1,2}):(\d{2})/);
+  if (!match) return 0;
+  const start = parseInt(match[1]) * 60 + parseInt(match[2]);
+  const end   = parseInt(match[3]) * 60 + parseInt(match[4]);
+  return Math.max(0, end - start);
+}
 
-            // 요일별 정렬을 위해 0~6 순서로 처리
-            [1, 2, 3, 4, 5, 6, 0].forEach(dayIdx => {
-                const dayName = daysOfWeek[dayIdx];
-                const isToday = dayName === today;
+function fmtHours(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return m + '분';
+  if (m === 0) return h + '시간';
+  return h + 'h ' + m + 'm';
+}
 
-                const dayClasses = `flex items-start p-3 rounded-xl border ${isToday ? 'current-day shadow-md' : 'bg-white border-slate-100'}`;
-                
-                // 김태윤 필터
-                const tItems = RAW_DATA.filter(d => d.student === '김태윤' && d.day === dayName);
-                if (tItems.length > 0 || isToday) {
-                    const row = document.createElement('div');
-                    row.className = dayClasses;
-                    row.innerHTML = `
-                        <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center font-bold text-lg rounded-lg ${isToday ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500'}">
-                            ${dayName}
-                        </div>
-                        <div class="ml-4 flex-grow space-y-2">
-                            ${tItems.length > 0 ? tItems.map(item => {
-                                const dur = calculateDuration(item.time);
-                                if (isToday) totalTodayMinutes += dur;
-                                return `
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="font-bold text-slate-700">${item.academy}</span>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-sm font-semibold text-slate-600">${item.time}</div>
-                                            <div class="text-xs text-slate-400">(${Math.floor(dur/60)}시간 ${dur%60}분)</div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') : '<div class="text-slate-300 italic py-2">학원 일정 없음</div>'}
-                        </div>
-                    `;
-                    taeyoonContainer.appendChild(row);
-                    if (isToday) {
-                        todaySummaryTaeyoon.innerHTML = tItems.length > 0 ? tItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '휴식일입니다.';
-                    }
-                }
+// ── TAEYUN DATA ──────────────────────────────────────────
+const TAEYUN = {
+  name: '김태윤',
+  general: [
+    { day:'월', entries:[{ subject:'영어', academy:'손샘영어', time:'18:30~20:30' }] },
+    { day:'화', entries:[{ subject:'수학', academy:'옥수학', time:'16:30~19:00' }] },
+    { day:'수', entries:[{ subject:'과학', academy:'', time:'' }] },
+    { day:'목', entries:[{ subject:'영어', academy:'손샘영어', time:'18:30~20:30' }] },
+    { day:'금', entries:[{ subject:'수학', academy:'옥수학', time:'16:30~20:30' }] },
+    { day:'토', entries:[
+        { subject:'국어', academy:'봉국어', time:'11:00~14:00' },
+        { subject:'수학', academy:'옥수학(월성점)', time:'14:00~15:00' },
+        { subject:'국어', academy:'봉국어(특강)', time:'15:00~16:00' },
+        { subject:'수학', academy:'옥수학', time:'16:30~19:00' },
+      ]
+    },
+    { day:'일', entries:[] },
+  ],
+  nesin: [
+    { day:'월', entries:[{ subject:'영어', academy:'손샘영어', time:'18:30~20:40', note:'기간: 3월28일~4월25일' }] },
+    { day:'목', entries:[{ subject:'영어', academy:'손샘영어', time:'18:30~20:40' }] },
+    { day:'토', entries:[
+        { subject:'수학', academy:'옥수학', time:'15:00~19:00' },
+        { subject:'국어', academy:'봉국어', time:'19:00~22:00' },
+      ]
+    },
+  ],
+};
 
-                // 김나윤 필터
-                const nItems = RAW_DATA.filter(d => d.student === '김나윤' && d.day === dayName);
-                if (nItems.length > 0 || isToday) {
-                    const row = document.createElement('div');
-                    row.className = dayClasses;
-                    row.innerHTML = `
-                        <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center font-bold text-lg rounded-lg ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}">
-                            ${dayName}
-                        </div>
-                        <div class="ml-4 flex-grow space-y-2">
-                            ${nItems.length > 0 ? nItems.map(item => {
-                                const dur = calculateDuration(item.time);
-                                if (isToday) totalTodayMinutes += dur;
-                                return `
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="subject-tag ${getSubjectClass(item.subject)}">${item.subject}</span>
-                                            <span class="font-bold text-slate-700">${item.academy}</span>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-sm font-semibold text-slate-600">${item.time}</div>
-                                            <div class="text-xs text-slate-400">(${Math.floor(dur/60)}시간 ${dur%60}분)</div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') : '<div class="text-slate-300 italic py-2">학원 일정 없음</div>'}
-                        </div>
-                    `;
-                    nayoonContainer.appendChild(row);
-                    if (isToday) {
-                        todaySummaryNayoon.innerHTML = nItems.length > 0 ? nItems.map(i => `• ${i.time} [${i.subject}] ${i.academy}`).join('<br>') : '휴식일입니다.';
-                    }
-                }
-            });
+// ── NAYUN DATA ────────────────────────────────────────────
+const NAYUN = {
+  name: '김나윤',
+  general: [
+    { day:'월', entries:[{ subject:'수학', academy:'디자인오브수학', time:'19:30~22:00' }] },
+    { day:'화', entries:[{ subject:'학교', academy:'심야자습(학교)', time:'~22:30' }] },
+    { day:'수', entries:[{ subject:'학교', academy:'야간자습(학교)', time:'~21:00' }] },
+    { day:'목', entries:[{ subject:'영어', academy:'일등영어', time:'19:00~21:00' }] },
+    { day:'금', entries:[{ subject:'학교', academy:'심야자습(학교)', time:'~22:30' }] },
+    { day:'토', entries:[
+        { subject:'국어', academy:'인사이트 국어', time:'13:30~16:00' },
+        { subject:'국어', academy:'인사이트 국어', time:'16:10~17:10' },
+      ]
+    },
+    { day:'일', entries:[{ subject:'영어', academy:'일등영어', time:'19:00~21:00' }] },
+  ],
+  nesin: [
+    { day:'일', entries:[
+        { subject:'국어', academy:'국내신', time:'13:00~15:30', note:'기간: 3월22일~4월26일' },
+        { subject:'국어', academy:'국클', time:'15:30~16:40' },
+        { subject:'영어', academy:'일등영어', time:'19:00~21:00' },
+      ]
+    },
+  ],
+};
 
-            document.getElementById('total-duration').textContent = `${Math.floor(totalTodayMinutes/60)}시간 ${totalTodayMinutes%60}분`;
-        }
+// ═══════════════════════════════════════════════════════
+// RENDER: Clock & Date
+// ═══════════════════════════════════════════════════════
+const WEEKDAY_KR = ['일','월','화','수','목','금','토'];
+const WEEKDAY_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 
-        // 초기화
-        window.onload = () => {
-            updateDateTime();
-            renderSchedule();
-            setInterval(updateDateTime, 1000);
-            
-            // 30분마다 데이터 갱신 시도 (실제 연동 시)
-            setInterval(renderSchedule, 30 * 60 * 1000);
-        };
-    </script>
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+
+  const y = now.getFullYear();
+  const mo = now.getMonth();
+  const d = now.getDate();
+  const wd = now.getDay();
+  document.getElementById('dateStr').textContent =
+    y + '년 ' + MONTH_KR[mo] + ' ' + d + '일 ' + WEEKDAY_FULL[wd];
+  document.getElementById('todayFull').textContent =
+    y + '년 ' + MONTH_KR[mo] + ' ' + d + '일';
+  document.getElementById('todayDayFull').textContent = WEEKDAY_FULL[wd];
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════
+// RENDER: Weekly Table
+// ═══════════════════════════════════════════════════════
+function buildPill(entry) {
+  const style = getSubjectStyle(entry.subject);
+  const dur = parseDuration(entry.time);
+  const durStr = dur > 0 ? ' (' + fmtHours(dur) + ')' : '';
+  const acad = entry.academy ? entry.academy : entry.subject;
+  let html = `<span class="schedule-pill" style="background:${style.bg};color:${style.text}">
+    ${acad}${entry.time ? `<span class="pill-time">${entry.time}${durStr}</span>` : ''}
+  </span>`;
+  if (entry.note) html += `<span class="internal-badge" title="${entry.note}">내신대비</span>`;
+  return html;
+}
+
+function buildTable(student, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  const now = new Date();
+  const todayIdx = now.getDay(); // 0=Sun
+  const todayKr = WEEKDAY_KR[todayIdx];
+
+  const nesinMap = {};
+  for (const nd of student.nesin) {
+    nesinMap[nd.day] = nd.entries;
+  }
+
+  let html = '';
+  for (const dayData of student.general) {
+    const isToday = dayData.day === todayKr;
+    const rowCls = isToday ? 'day-today-highlight' : '';
+    const nesinEntries = nesinMap[dayData.day] || [];
+
+    // general cell
+    let genCell = '';
+    if (dayData.entries.length === 0) {
+      genCell = '<span style="color:#c0c8d0;font-size:12px;">—</span>';
+    } else {
+      genCell = dayData.entries.map(buildPill).join('');
+    }
+
+    // nesin cell
+    let nesinCell = '';
+    if (nesinEntries.length === 0) {
+      nesinCell = '<span style="color:#c0c8d0;font-size:12px;">—</span>';
+    } else {
+      nesinCell = nesinEntries.map(buildPill).join('');
+    }
+
+    const dayLabel = isToday
+      ? `<span class="today-marker">${dayData.day}</span>`
+      : dayData.day;
+
+    html += `<tr class="${rowCls}">
+      <td class="day-cell ${DAY_CLASSES[dayData.day]}">${dayLabel}</td>
+      <td>${genCell}</td>
+      <td>${nesinCell}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+buildTable(TAEYUN, 'taeyun-tbody');
+buildTable(NAYUN, 'nayun-tbody');
+
+// Tab switch
+function switchTab(who) {
+  const tabs = document.querySelectorAll('.week-tab');
+  tabs.forEach(t => { t.className = 'week-tab'; });
+  if (who === 'taeyun') {
+    tabs[0].className = 'week-tab active-taeyun';
+    document.getElementById('taeyun-table').style.display = '';
+    document.getElementById('nayun-table').style.display = 'none';
+  } else {
+    tabs[1].className = 'week-tab active-nayun';
+    document.getElementById('taeyun-table').style.display = 'none';
+    document.getElementById('nayun-table').style.display = '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER: Today's schedule (left panel)
+// ═══════════════════════════════════════════════════════
+function renderTodayItems(student, containerId) {
+  const now = new Date();
+  const todayKr = WEEKDAY_KR[now.getDay()];
+  const container = document.getElementById(containerId);
+
+  // General
+  const genDay = student.general.find(d => d.day === todayKr);
+  // Nesin
+  const nesinDay = student.nesin.find(d => d.day === todayKr);
+
+  const allEntries = [];
+  if (genDay) for (const e of genDay.entries) allEntries.push({ ...e, isNesin: false });
+  if (nesinDay) for (const e of nesinDay.entries) allEntries.push({ ...e, isNesin: true });
+
+  if (allEntries.length === 0) {
+    container.innerHTML = '<div class="no-schedule">📅 오늘 일정 없음</div>';
+    return;
+  }
+
+  let html = '';
+  for (const e of allEntries) {
+    const style = getSubjectStyle(e.subject);
+    const dur = parseDuration(e.time);
+    const durStr = dur > 0 ? fmtHours(dur) : '';
+    const acad = e.academy || e.subject;
+
+    html += `<div class="today-item">
+      <div class="subject-dot" style="background:${style.dot}"></div>
+      <div class="item-info">
+        <div class="item-academy">${acad}${e.isNesin ? ' <span class="internal-badge">내신대비</span>' : ''}</div>
+        <div class="item-subject">${e.subject}${e.note ? ' · ' + e.note : ''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="item-time">${e.time || '-'}</div>
+        ${durStr ? `<div class="duration-badge" style="background:${style.bg};color:${style.text};margin-top:4px;">${durStr}</div>` : ''}
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+renderTodayItems(TAEYUN, 'taeyun-today');
+renderTodayItems(NAYUN, 'nayun-today');
+
+// ═══════════════════════════════════════════════════════
+// RENDER: Stats — subject bars
+// ═══════════════════════════════════════════════════════
+function computeSubjectHours(student) {
+  const map = {};
+  for (const dayData of student.general) {
+    for (const e of dayData.entries) {
+      const key = e.subject;
+      const mins = parseDuration(e.time);
+      if (!map[key]) map[key] = 0;
+      map[key] += mins;
+    }
+  }
+  return map;
+}
+
+function renderSubjectBars(student, containerId) {
+  const map = computeSubjectHours(student);
+  const entries = Object.entries(map).sort((a,b) => b[1]-a[1]);
+  const max = entries.length > 0 ? entries[0][1] : 1;
+  const container = document.getElementById(containerId);
+
+  let html = '';
+  for (const [subj, mins] of entries) {
+    const style = getSubjectStyle(subj);
+    const pct = Math.round(mins / max * 100);
+    html += `<div class="subject-bar-item">
+      <div class="subject-bar-label">
+        <span style="color:${style.text}">${subj}</span>
+        <span class="hours">${fmtHours(mins)}</span>
+      </div>
+      <div class="subject-bar-track">
+        <div class="subject-bar-fill" style="width:${pct}%;background:${style.dot}"></div>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html || '<div style="color:var(--text-muted);font-size:12px;">데이터 없음</div>';
+}
+
+renderSubjectBars(TAEYUN, 'taeyun-bars');
+renderSubjectBars(NAYUN, 'nayun-bars');
+
+// ═══════════════════════════════════════════════════════
+// RENDER: Academy list
+// ═══════════════════════════════════════════════════════
+function renderAcademyList() {
+  const map = {}; // academyName → { mins, days: Set }
+
+  function addEntries(student, entries_by_day) {
+    for (const dayData of entries_by_day) {
+      for (const e of dayData.entries) {
+        const acad = e.academy;
+        if (!acad || acad.includes('학교')) continue;
+        if (!map[acad]) map[acad] = { mins: 0, days: new Set() };
+        map[acad].mins += parseDuration(e.time);
+        map[acad].days.add(dayData.day);
+      }
+    }
+  }
+
+  addEntries(TAEYUN, TAEYUN.general);
+  addEntries(NAYUN, NAYUN.general);
+
+  const sorted = Object.entries(map).sort((a,b) => b[1].mins - a[1].mins);
+  const container = document.getElementById('academy-list');
+
+  let html = '';
+  for (const [acad, data] of sorted) {
+    const color = getAcademyColor(acad);
+    const days = [...data.days].join('·');
+    html += `<div class="academy-row">
+      <div class="academy-dot" style="background:${color}"></div>
+      <div class="academy-name">${acad}</div>
+      <div class="academy-days">${days}요일</div>
+      <div class="academy-hours" style="color:${color}">${fmtHours(data.mins)}</div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+renderAcademyList();
+</script>
 </body>
 </html>
